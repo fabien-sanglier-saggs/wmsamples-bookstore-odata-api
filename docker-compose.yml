@@ -1,0 +1,48 @@
+version: "3.8"
+
+networks:
+  stack:
+
+services:
+  
+  bookstoreapi:
+    image: ${REG}wmsamples-bookstore-api:${TAG}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: ${REG}webmethods-msr-art-jdbc:${MSR_TAG}
+    environment:
+      - JDBC_HOST=bookstoreapidb
+      - JDBC_PORT=5432
+      - JDBC_USERNAME=postgres
+      - JDBC_USERPASSWORD=veryStrongPAssword123!
+      - BUILTIN_USER_ADMIN_PASSWORD=SomethingStrong123!
+      - BUILTIN_USER_DEVELOPER_PASSWORD=SomethingStrong456!
+      - BUILTIN_USER_REPLICATOR_PASSWORD=SomethingStrong789!
+    ports:
+      - 5555:5555
+    volumes:
+      - ${PWD}/assets/licenses/msr-licenseKey.xml:/opt/softwareag/IntegrationServer/config/licenseKey.xml:rw
+    networks:
+      - stack
+    depends_on:
+      - bookstoreapidb
+
+  # postgress db + load the sql scripts to create tables and fill with some sample records
+  bookstoreapidb:
+    image: ${REG}wmsamples-bookstore-api-db:${TAG}
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+      args:
+        BASE_IMAGE: postgres:13.4-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=veryStrongPAssword123!
+    ports:
+      - '5432:5432'
+    volumes: 
+      - ${PWD}/workspace/postgres-data:/var/lib/postgresql/data
+    networks:
+      - stack

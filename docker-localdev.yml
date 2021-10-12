@@ -1,0 +1,34 @@
+version: "3.8"
+
+networks:
+  stack:
+
+services:
+  
+  localdev:
+    image: ${REG}webmethods-msr-art-jdbc:${MSR_TAG}
+    ports:
+      - 5555:5555
+    volumes:
+      - ${PWD}/workspace/replicate:/opt/softwareag/IntegrationServer/replicate:rw
+      - ${PWD}/assets/licenses/msr-licenseKey.xml:/opt/softwareag/IntegrationServer/config/licenseKey.xml:rw
+      - ${PWD}/application-localdev.properties:/opt/softwareag/IntegrationServer/application.properties:rw
+      - ${PWD}/libs/postgresql.jar:/opt/softwareag/IntegrationServer/packages/WmJDBCAdapter/code/jars/postgresql.jar:ro
+      # - ${PWD}/assets/IS/Packages/BookstoreODataAPI:/opt/softwareag/IntegrationServer/packages/BookstoreODataAPI:rw
+    networks:
+      - stack
+
+  # postgress db + load the sql scripts to create tables and fill with some sample records
+  postgres:
+    image: postgres:13.4-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes: 
+      - ${PWD}/workspace/postgres-data:/var/lib/postgresql/data
+      - ${PWD}/assets/sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ${PWD}/assets/sql/fill_tables.sql:/docker-entrypoint-initdb.d/fill_tables.sql
+    networks:
+      - stack

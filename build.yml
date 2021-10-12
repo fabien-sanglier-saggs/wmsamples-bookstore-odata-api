@@ -1,0 +1,15 @@
+version: "3.8"
+
+networks:
+  stack:
+
+services:
+  
+  compile:
+    image: ${REG}webmethods-abe:${ABE_TAG}
+    environment:
+      - projectName=wmsamples-bookstore-odata-api
+    volumes:
+      - .:/src:rw
+    networks:
+      - stack
